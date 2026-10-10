@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent
 app = Flask(__name__, static_folder=str(BASE_DIR), static_url_path='')
 
 # Tried in order until one works.
-MODELS = [m for m in [os.getenv('GEMINI_MODEL'), 'gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'] if m]
+MODELS = [m for m in [os.getenv('GEMINI_MODEL'), 'gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-3.8-flash'] if m]
 URL = 'https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent'
 
 
