@@ -1,18 +1,26 @@
 import os
+from pathlib import Path
 import traceback
 import requests
 from flask import Flask, request, jsonify, send_from_directory
 
-app = Flask(__name__, static_folder='.', static_url_path='')
+BASE_DIR = Path(__file__).resolve().parent
+
+app = Flask(__name__, static_folder=str(BASE_DIR), static_url_path='')
 
 # Tried in order until one works.
 MODELS = [m for m in [os.getenv('GEMINI_MODEL'), 'gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'] if m]
 URL = 'https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent'
 
 
+@app.route('/health')
+def health():
+    return 'OK', 200
+
+
 @app.route('/')
 def index():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory(BASE_DIR, 'index.html')
 
 
 @app.route('/api/generate', methods=['POST'])
