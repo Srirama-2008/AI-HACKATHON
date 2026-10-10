@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Business Data AI Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PapaParse CDN for CSV parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <!-- SheetJS CDN for Excel parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Marked CDN for rendering formatted markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- jsPDF CDN for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Business Data AI Explorer</h1>
+        <p>Upload your dataset, ask natural‑language questions, and get instant charts, tables, and AI explanations.</p>
+    </header>
+
+    <main>
+        <section id="upload-section">
+            <h2>1️⃣ Upload Dataset / File</h2>
+            <input type="file" id="file-input" accept=".csv, .xlsx, .xls, .txt, .json, .md" />
+            <p id="upload-status" class="status"></p>
+        </section>
+
+        <section id="query-section" class="hidden">
+            <h2>2️⃣ Ask a Question</h2>
+            <textarea id="nl-query" rows="3" placeholder="e.g., Show total sales by month for 2023"></textarea>
+            <button id="ask-btn">Ask AI</button>
+            <p id="query-status" class="status"></p>
+        </section>
+
+        <section id="result-section" class="hidden">
+            <h2>3️⃣ Results</h2>
+            <div id="explanation" class="card"></div>
+            <div id="chart-container" class="card hidden">
+                <canvas id="result-chart"></canvas>
+                <button class="export-btn" id="export-png">Export PNG</button>
+            </div>
+            <div id="table-container" class="card hidden">
+                <table id="result-table"></table>
+                <button class="export-btn" id="export-csv">Export CSV</button>
+            </div>
+            <button class="export-btn" id="export-pdf">Export PDF Report</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 Business Data AI Explorer – Premium UI by Antigravity</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

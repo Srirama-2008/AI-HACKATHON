@@ -1,0 +1,176 @@
+/* style.css – Premium UI for Business Data AI Explorer */
+
+/* Reset & base */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  color: #f0f0f0;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism container */
+main {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+section {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+h1, h2 {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+h1 {
+  font-size: 2.2rem;
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.6rem;
+  color: #e0e0ff;
+}
+
+/* Upload section */
+#file-input {
+  padding: 0.6rem;
+  border: 2px solid #6a5acd;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  cursor: pointer;
+}
+#file-input:hover {
+  border-color: #9370db;
+}
+
+/* Query area */
+#nl-query {
+  width: 100%;
+  padding: 0.8rem;
+  border: 2px solid #6a5acd;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  resize: vertical;
+  font-size: 1rem;
+}
+#ask-btn {
+  margin-top: 0.8rem;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(90deg, #6a5acd, #9370db);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+#ask-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+/* Cards */
+.card {
+  background: rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+#explanation {
+  line-height: 1.6;
+}
+#explanation p {
+  margin-bottom: 0.8rem;
+}
+#explanation ul, #explanation ol {
+  margin-left: 1.5rem;
+  margin-bottom: 0.8rem;
+}
+#explanation li {
+  margin-bottom: 0.4rem;
+}
+#explanation h1, #explanation h2, #explanation h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #c4b5fd;
+}
+#explanation code {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+/* Table styling */
+#result-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+}
+#result-table th, #result-table td {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  text-align: left;
+}
+#result-table th {
+  background: rgba(255,255,255,0.2);
+  font-weight: 600;
+}
+
+/* Export buttons */
+.export-btn {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background: linear-gradient(90deg, #4b6cb7, #182848);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+.export-btn:hover {
+  opacity: 0.85;
+}
+
+.status {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #a0a0ff;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: #bbb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  main {
+    margin: 1rem;
+  }
+  h1 {font-size: 1.8rem;}
+  h2 {font-size: 1.4rem;}
+}
