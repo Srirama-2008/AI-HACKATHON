@@ -7,7 +7,7 @@
     <title>Business Data AI Explorer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,12 +22,46 @@
 </head>
 <body>
     <header>
+        <div class="nav-bar">
+            <div class="brand">📊 AI Data Explorer</div>
+            <div class="user-badge" id="user-badge">
+                <span id="user-display">Checking session...</span>
+                <button id="logout-btn" class="auth-btn-small hidden">Log Out</button>
+            </div>
+        </div>
         <h1>Business Data AI Explorer</h1>
         <p>Upload your dataset, ask natural‑language questions, and get instant charts, tables, and AI explanations.</p>
     </header>
 
     <main>
-        <section id="upload-section">
+        <!-- Authentication Section (Shown when logged out) -->
+        <section id="auth-section">
+            <div class="auth-box">
+                <h2>🔐 Welcome to AI Data Explorer</h2>
+                <p class="auth-subtitle">Please sign in or create an account to access the platform.</p>
+                
+                <div class="auth-tabs">
+                    <button id="tab-login" class="tab-btn active">Sign In</button>
+                    <button id="tab-signup" class="tab-btn">Create Account</button>
+                </div>
+
+                <form id="auth-form">
+                    <div class="form-group">
+                        <label for="auth-username">Username</label>
+                        <input type="text" id="auth-username" required placeholder="Enter username (min. 3 characters)" autocomplete="username" />
+                    </div>
+                    <div class="form-group">
+                        <label for="auth-password">Password</label>
+                        <input type="password" id="auth-password" required placeholder="Enter password (min. 6 characters)" autocomplete="current-password" />
+                    </div>
+                    <button type="submit" id="auth-submit-btn" class="submit-btn">Sign In</button>
+                    <p id="auth-status" class="status"></p>
+                </form>
+            </div>
+        </section>
+
+        <!-- App Sections (Shown when logged in) -->
+        <section id="upload-section" class="hidden">
             <h2>1️⃣ Upload Dataset / File</h2>
             <input type="file" id="file-input" accept=".csv, .xlsx, .xls, .txt, .json, .md" />
             <p id="upload-status" class="status"></p>
@@ -56,7 +90,7 @@
     </main>
 
     <footer>
-        <p>© 2026 Business Data AI Explorer – Premium UI by Antigravity</p>
+        <p>© 2026 Business Data AI Explorer – Secured Authentication Enabled</p>
     </footer>
 
     <script src="script.js"></script>

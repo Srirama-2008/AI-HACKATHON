@@ -2,3 +2,5 @@ cloudflared.exe
 __pycache__/
 *.pyc
 .env
+*.db
+users.db

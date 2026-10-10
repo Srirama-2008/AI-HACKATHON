@@ -1,13 +1,16 @@
 // script.js – Business Data AI Explorer MVP
 // ------------------------------------------------------------
-// This script ties together:
+// Features:
+//   • User Authentication (Login, Sign Up, Session Check, Logout)
 //   • Client‑side CSV / Excel / text file upload
-//   • Sending the user query + dataset/file contents to the Gemini backend
-//   • Rendering the AI‑generated explanation, chart (Chart.js) and table
-//   • Exporting PNG, CSV and PDF reports
+//   • Natural language querying via Gemini with sample dataset/file embedding
+//   • Markdown explanations, Chart.js charts, and summary tables
+//   • Report export to PNG, CSV, and PDF
 // ------------------------------------------------------------
 
 // ==================== Global State ====================
+let currentUser = null;
+let isSignUpMode = false;
 let dataset = []; // array of objects for tabular data
 let columnNames = [];
 let uploadedFileName = '';
@@ -42,6 +45,106 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+// ==================== Authentication Flow ====================
+async function checkAuth() {
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json();
+    if (data.authenticated && data.username) {
+      currentUser = data.username;
+      document.getElementById('user-display').textContent = `👤 ${currentUser}`;
+      show('logout-btn');
+      hide('auth-section');
+      show('upload-section');
+    } else {
+      currentUser = null;
+      document.getElementById('user-display').textContent = 'Not logged in';
+      hide('logout-btn');
+      show('auth-section');
+      hide('upload-section');
+      hide('query-section');
+      hide('result-section');
+    }
+  } catch (err) {
+    console.error('Session check error:', err);
+    document.getElementById('user-display').textContent = 'Offline';
+  }
+}
+
+// Tab Switching (Sign In vs Create Account)
+document.getElementById('tab-login').addEventListener('click', () => {
+  isSignUpMode = false;
+  document.getElementById('tab-login').classList.add('active');
+  document.getElementById('tab-signup').classList.remove('active');
+  document.getElementById('auth-submit-btn').textContent = 'Sign In';
+  setStatus('auth-status', '');
+});
+
+document.getElementById('tab-signup').addEventListener('click', () => {
+  isSignUpMode = true;
+  document.getElementById('tab-signup').classList.add('active');
+  document.getElementById('tab-login').classList.remove('active');
+  document.getElementById('auth-submit-btn').textContent = 'Create Account';
+  setStatus('auth-status', '');
+});
+
+// Form Submission
+document.getElementById('auth-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value.trim();
+
+  if (!username || !password) {
+    setStatus('auth-status', 'Please enter both username and password.', true);
+    return;
+  }
+
+  const endpoint = isSignUpMode ? '/api/auth/signup' : '/api/auth/login';
+  setStatus('auth-status', isSignUpMode ? 'Creating account...' : 'Signing in...');
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setStatus('auth-status', `❌ ${data.error || 'Authentication failed'}`, true);
+      return;
+    }
+
+    setStatus('auth-status', '✅ Success! Loading dashboard...');
+    document.getElementById('auth-username').value = '';
+    document.getElementById('auth-password').value = '';
+    await checkAuth();
+  } catch (err) {
+    setStatus('auth-status', `❌ Network error: ${err.message}`, true);
+  }
+});
+
+// Logout
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    dataset = [];
+    columnNames = [];
+    fileRawContent = '';
+    uploadedFileName = '';
+    if (chartInstance) {
+      chartInstance.destroy();
+      chartInstance = null;
+    }
+    await checkAuth();
+  } catch (err) {
+    console.error('Logout error:', err);
+  }
+});
+
+// Run auth check on initial load
+checkAuth();
+
 // ==================== File Upload ====================
 document.getElementById('file-input').addEventListener('change', (e) => {
   const file = e.target.files[0];
@@ -61,7 +164,6 @@ document.getElementById('file-input').addEventListener('change', (e) => {
         dataset = (results.data || []).filter(row => Object.values(row).some(v => v !== null && v !== ''));
         columnNames = results.meta.fields || (dataset.length > 0 ? Object.keys(dataset[0]) : []);
         
-        // Also read raw text snippet
         const reader = new FileReader();
         reader.onload = (ev) => { fileRawContent = ev.target.result || ''; };
         reader.readAsText(file);
@@ -110,7 +212,6 @@ document.getElementById('file-input').addEventListener('change', (e) => {
       dataset = [];
       columnNames = [];
 
-      // If JSON and structured as an array of records
       if (ext === 'json') {
         try {
           const parsed = JSON.parse(fileRawContent);
@@ -127,7 +228,6 @@ document.getElementById('file-input').addEventListener('change', (e) => {
     };
     reader.readAsText(file);
   } else {
-    // Attempt reading as text by default
     const reader = new FileReader();
     reader.onload = (ev) => {
       fileRawContent = ev.target.result || '';
@@ -142,7 +242,6 @@ document.getElementById('file-input').addEventListener('change', (e) => {
 
 // ==================== Prompt Constructor ====================
 function buildAIPrompt(userQuery) {
-  // If tabular dataset exists
   if (dataset && dataset.length > 0) {
     const previewCount = Math.min(dataset.length, 30);
     const sampleRows = dataset.slice(0, previewCount);
@@ -181,7 +280,6 @@ If a chart or table is not relevant, set "chart": null and/or "table": null.
 Output ONLY the JSON object (you may wrap it in \`\`\`json ... \`\`\`).`;
   }
 
-  // If text file / document
   if (fileRawContent) {
     const textSnippet = fileRawContent.slice(0, 40000);
     return `You are an expert AI assistant.
@@ -199,7 +297,6 @@ Please provide a comprehensive, accurate analysis or summary directly addressing
 Output your answer in clean markdown format.`;
   }
 
-  // No file uploaded
   return userQuery;
 }
 
@@ -216,6 +313,12 @@ async function askAI(query) {
       body: JSON.stringify({ prompt: fullPrompt }),
     });
 
+    if (response.status === 401) {
+      setStatus('query-status', '❌ Session expired. Please sign in again.', true);
+      await checkAuth();
+      return null;
+    }
+
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
       setStatus('query-status', `❌ Backend error ${response.status}: ${errData.error || response.statusText}`, true);
@@ -230,7 +333,6 @@ async function askAI(query) {
 
     const rawText = (data.response || '').trim();
 
-    // Attempt to parse structured JSON from the model response
     let parsedResult = null;
     try {
       let jsonString = rawText;
@@ -242,9 +344,7 @@ async function askAI(query) {
       if (parsed && typeof parsed === 'object') {
         parsedResult = parsed;
       }
-    } catch (_) {
-      // Response was not JSON, fallback to standard markdown text
-    }
+    } catch (_) {}
 
     if (parsedResult) {
       return {
@@ -289,7 +389,6 @@ document.getElementById('ask-btn').addEventListener('click', async () => {
     const ctx = document.getElementById('result-chart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
-    // Default colorful palettes if not defined
     const defaultColors = [
       'rgba(106, 90, 205, 0.85)',
       'rgba(72, 219, 251, 0.85)',
@@ -369,13 +468,11 @@ document.getElementById('ask-btn').addEventListener('click', async () => {
     hide('table-container');
   }
 
-  // Show result section and update status
   show('result-section');
   setStatus('query-status', '✅ Done');
 });
 
 // ==================== Export Functions ====================
-// Export PNG from Chart.js canvas
 document.getElementById('export-png').addEventListener('click', () => {
   if (!chartInstance) return;
   const link = document.createElement('a');
@@ -384,7 +481,6 @@ document.getElementById('export-png').addEventListener('click', () => {
   link.click();
 });
 
-// Export CSV of the table data
 document.getElementById('export-csv').addEventListener('click', () => {
   const table = document.getElementById('result-table');
   if (!table) return;
@@ -409,7 +505,6 @@ document.getElementById('export-csv').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-// Export PDF report
 document.getElementById('export-pdf').addEventListener('click', async () => {
   if (!window.jspdf) {
     alert('PDF export library is still loading. Please try again.');
@@ -419,19 +514,16 @@ document.getElementById('export-pdf').addEventListener('click', async () => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
   let y = 40;
 
-  // Title
   doc.setFontSize(20);
   doc.text('Business Data AI Report', 40, y);
   y += 30;
 
-  // Explanation
   doc.setFontSize(11);
   const explanation = document.getElementById('explanation').innerText || '';
   const lines = doc.splitTextToSize(explanation, 520);
   doc.text(lines, 40, y);
   y += lines.length * 14 + 20;
 
-  // Chart image
   if (chartInstance && !document.getElementById('chart-container').classList.contains('hidden')) {
     if (y + 260 > 800) {
       doc.addPage();
@@ -442,7 +534,6 @@ document.getElementById('export-pdf').addEventListener('click', async () => {
     y += 280;
   }
 
-  // Table
   const table = document.getElementById('result-table');
   if (table && !document.getElementById('table-container').classList.contains('hidden')) {
     if (y + 100 > 800) {
